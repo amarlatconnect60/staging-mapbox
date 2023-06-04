@@ -74,6 +74,10 @@ const vectorTilesets = [
     center: [100.392, 6.016],
     zoom: 13.11,
   },
+  // {
+  //   name: 'ALL_SBB_POLYGON-7gaa7g',
+  //   id: 'ludfi.99uvhjbb',
+  // },
 ]
 
 const App = () => {
@@ -84,7 +88,7 @@ const App = () => {
   useEffect(() => {
     const mapInstance = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: 'mapbox://styles/mapbox/satellite-streets-v11',
       center: vectorTilesets[0].center,
       zoom: vectorTilesets[0].zoom,
     })
@@ -126,33 +130,103 @@ const App = () => {
         },
       })
 
-      map.on('mousemove', 'your-vector-layer', e => {
-        if (e.features.length) {
+      // Add border layer source and layer
+      map.addSource('border-source', {
+        type: 'vector',
+        url: `mapbox://ludfi.99uvhjbb`,
+      })
+
+      // Add border fill layer
+      map.addLayer({
+        id: 'border-fill-layer',
+        type: 'fill',
+        source: 'border-source',
+        'source-layer': 'ALL_SBB_POLYGON-7gaa7g',
+        paint: {
+          'fill-color': 'rgba(0, 0, 0, 0)', // fully transparent fill
+          'fill-outline-color': 'black', // black outline
+        },
+      })
+
+      // Add border line layer
+      map.addLayer({
+        id: 'border-line-layer',
+        type: 'line',
+        source: 'border-source',
+        'source-layer': 'ALL_SBB_POLYGON-7gaa7g',
+        paint: {
+          'line-color': 'black', // black line
+          'line-width': 2, // adjust to the desired thickness
+        },
+      })
+
+      map.on('click', 'border-fill-layer', e => {
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: ['border-fill-layer'],
+        })
+
+        if (!features.length) {
+          return
+        }
+
+        const feature = features[0]
+
+        const popup = new mapboxgl.Popup({ offset: [0, -15] })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<h3>LOT ${feature.properties.LOT}</h3>` +
+              `<ul>` +
+              `<li>id: ${feature.properties.id}</li>` +
+              `<li>ALAMATPEMI: ${feature.properties.ALAMATPEMI}</li>` +
+              `<li>BLOCK: ${feature.properties.BLOCK}</li>` +
+              `<li>CLASS: ${feature.properties.CLASS}</li>` +
+              `<li>DAERAH: ${feature.properties.DAERAH}</li>` +
+              `<li>FASA: ${feature.properties.FASA}</li>` +
+              `<li>Field: ${feature.properties.Field}</li>` +
+              `<li>GUID: ${feature.properties.GUID}</li>` +
+              `<li>Ha: ${feature.properties.Ha}</li>` +
+              `<li>KEGUNAANTA: ${feature.properties.KEGUNAANTA}</li>` +
+              `<li>Field: ${feature.properties.Field}</li>` +
+              `<li>KELUASAN: ${feature.properties.KELUASAN}</li>` +
+              `<li>KEMASKINI: ${feature.properties.KEMASKINI}</li>` +
+              `<li>MI_PRINX: ${feature.properties.MI_PRINX}</li>` +
+              `<li>MUKIM: ${feature.properties.MUKIM}</li>` +
+              `<li>NAMAPEMILI: ${feature.properties.NAMAPEMILI}</li>` +
+              `<li>NEGERI: ${feature.properties.NEGERI}</li>` +
+              `<li>NOFAILUKUR: ${feature.properties.NOFAILUKUR}</li>` +
+              `<li>OBJECTID: ${feature.properties.OBJECTID}</li>` +
+              `<li>PA: ${feature.properties.PA}</li>` +
+              `<li>S_AREA: ${feature.properties.S_AREA}</li>` +
+              `<li>SEKSYEN: ${feature.properties.SEKSYEN}</li>` +
+              `<li>Shape_Area: ${feature.properties.Shape_Area}</li>` +
+              +`<li>Shape_Le_1: ${feature.properties.Shape_Le_1}</li>` +
+              `<li>Shape_Leng: ${feature.properties.Shape_Leng}</li>` +
+              `<li>STATUS: ${feature.properties.STATUS}</li>` +
+              `<li>UPI: ${feature.properties.UPI}</li>` +
+              `</ul>`
+          )
+          .addTo(map)
+      })
+
+      let hoverPopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+      })
+
+      map.on('mousemove', 'border-fill-layer', function (e) {
+        if (e.features.length > 0) {
           const feature = e.features[0]
-          popupRef.current
+
+          hoverPopup
             .setLngLat(e.lngLat)
-            .setHTML(`SBB_SawahSempadan-b5zxxf`)
+            .setHTML(`LOT: ${feature.properties.LOT}`)
             .addTo(map)
         }
       })
 
-      map.on('mouseleave', 'your-vector-layer', () => {
-        popupRef.current.remove()
-      })
-
-      map.on('click', 'your-vector-layer', e => {
-        if (e.features.length) {
-          const feature = e.features[0]
-          const popupContent = `
-            SBB_SawahSempadan-b5zxxf<br/>
-            id (${feature.id})<br/>
-            gridcode# (${feature.properties.gridcode})<br/>
-            Id# (${feature.properties.Id})<br/>
-            Shape_Area# (${feature.properties.Shape_Area})<br/>
-            Shape_Leng# (${feature.properties.Shape_Leng})
-          `
-          popupRef.current.setLngLat(e.lngLat).setHTML(popupContent).addTo(map)
-        }
+      // When the mouse leaves the state-fill layer, remove the popup
+      map.on('mouseleave', 'border-fill-layer', function () {
+        hoverPopup.remove()
       })
     }
   }, [map])
