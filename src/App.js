@@ -506,49 +506,12 @@ const App = () => {
         hoverPopup.remove()
       })
 
-      map.flyTo({ center: selectedTileset.center, zoom: selectedTileset.zoom })
+      map.addControl(new mapboxgl.FullscreenControl())
+      map.addControl(new mapboxgl.NavigationControl())
+
+      // map.flyTo({ center: selectedTileset.center, zoom: selectedTileset.zoom })
     }
   }, [map, selectedTileset])
-
-  // const switchTileset = tileset => {
-  //   if (map.getLayer('your-vector-layer')) {
-  //     map.removeLayer('your-vector-layer')
-  //   }
-
-  //   if (map.getSource('your-vector-source')) {
-  //     map.removeSource('your-vector-source')
-  //   }
-
-  //   map.addSource('your-vector-source', {
-  //     type: 'vector',
-  //     url: `mapbox://${tileset.id}`,
-  //   })
-
-  //   map.addLayer({
-  //     id: 'your-vector-layer',
-  //     type: 'fill',
-  //     source: 'your-vector-source',
-  //     'source-layer': tileset.name,
-  //     paint: {
-  //       'fill-color': [
-  //         'match',
-  //         ['get', 'gridcode'],
-  //         1,
-  //         'red',
-  //         2,
-  //         'orange',
-  //         3,
-  //         'yellow',
-  //         4,
-  //         'green',
-  //         'black',
-  //       ],
-  //       'fill-opacity': 0.6,
-  //     },
-  //   })
-
-  //   map.flyTo({ center: tileset.center, zoom: tileset.zoom })
-  // }
 
   const handleTilesetChange = event => {
     setSelectedTileset(
